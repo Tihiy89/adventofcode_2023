@@ -1,67 +1,87 @@
 import { input_a as input_a } from "./input.js";
 
-const cards = input_a()
+const re_digit = /[0-9]/;
+const m1 = input_a()
   .split("\n")
-  .map((i) => i.split(":"))
-  .map((i, index) => {
-    const r = i[1]
-      .trim()
-      .split("|")
-      .map((i) =>
-        i
-          .trim()
-          .replace(/  +/g, " ")
-          .split(" ")
-          .map((i) => Number(i))
-          .sort((b, a) => b - a)
-      );
+  .map((i) => i.split(""));
 
-    return [...r, [], index + 1];
-  });
+const numbers = [];
+const details = [];
 
-/* Solution A  */
-let new_card = [];
-let sum_point = 0;
-for (let index_card = 0; index_card < cards.length; index_card++) {
-  const card = cards[index_card];
-  const win_num = card[0];
-  const num_for_check = card[1];
-  const num_card = index_card + 1;
-  let count_win_num = 0;
+for (let i = 0; i < m1.length; i++) {
+  for (let j = 0; j < m1[i].length; j++) {
+    let is_num = re_digit.test(m1[i][j]);
+    if (is_num) {
+      // индексы для поиска деталей
+      const j_min = Math.max(j - 1, 0);
+      const j_min_coord = j;
+      let num_s = m1[i][j];
+      while (is_num) {
+        j++;
+        is_num = re_digit.test(m1[i][j]);
+        if (is_num) {
+          num_s += m1[i][j];
+        }
+      }
+      const j_max = Math.min(m1[i].length - 1, j);
+      const j_max_coord = j - 1;
 
-  for (let i = 0, j = 0; i < win_num.length && j < num_for_check.length; i++) {
-    while (win_num[i] > num_for_check[j]) {
-      j++;
+      // ищем детали рядом
+      let f_valid = false;
+      for (
+        let i1 = Math.max(0, i - 1);
+        i1 <= Math.min(m1.length - 1, i + 1) && !f_valid;
+        i1++
+      ) {
+        for (let j1 = j_min; j1 <= j_max && !f_valid; j1++) {
+          const sym = m1[i1][j1];
+          if (!re_digit.test(sym) && sym != ".") {
+            f_valid = true;
+          }
+        }
+      }
+      if (f_valid) {
+        numbers.push({
+          x_min: j_min_coord,
+          x_max: j_max_coord,
+          y: i,
+          val: Number(num_s),
+        });
+      }
     }
-
-    if (win_num[i] == num_for_check[j]) {
-      count_win_num++;
-    }
+    //
   }
-
-  sum_point += count_win_num ? Math.pow(2, count_win_num - 1) : 0;
-
-  card[2] = [];
-  for (
-    let ind_win_card = num_card + 1;
-    ind_win_card <= num_card + count_win_num;
-    ind_win_card++
-  ) {
-    card[2].push(ind_win_card);
-  }
-  new_card = [...new_card, ...card[2]];
 }
 
-console.log("A", sum_point);
+/* solution A */
+const sum1 = numbers.reduce((sum, i) => (sum += i.val), 0);
+console.log("A", sum1);
 
-/* Solution B  */
-while (new_card.length) {
-  const i_new = new_card.pop();
-  const card1 = cards[i_new - 1];
-  new_card.push(...card1[2]);
-  cards.push(cards[i_new]);
+/* solution B */
+for (let i = 0; i < m1.length; i++) {
+  for (let j = 0; j < m1[i].length; j++) {
+    const sym = m1[i][j];
+    if (!re_digit.test(sym) && sym != ".") {
+      details.push({ type: sym, x: j, y: i });
+    }
+  }
 }
 
-const n = cards.sort((b, a) => b[3] - a[3]);
+let pow = 0;
 
-console.log("B", cards.length);
+const gears = details.filter((i) => i.type == "*");
+for (const g of gears) {
+  const num1 = numbers.filter(
+    (i) =>
+      g.x - 1 <= i.x_max &&
+      g.x + 1 >= i.x_min &&
+      g.y - 1 <= i.y &&
+      g.y + 1 >= i.y
+  );
+
+  if (num1.length > 1) {
+    pow += num1.reduce((p, i) => (p *= i.val), 1);
+  }
+}
+
+console.log("B", pow);
