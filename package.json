@@ -1,3 +1,9 @@
 {
+  "name": "advent_code_2023",
+  "description": "my solution",
+  "authors": "aa.tikhonov",
+  "version": "1.0.0",
+  "main": "pathToMain",
+  "dependencies": {},
   "type": "module"
 }
