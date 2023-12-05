@@ -1,87 +1,145 @@
 import { input_a as input_a } from "./input.js";
 
-const re_digit = /[0-9]/;
-const m1 = input_a()
-  .split("\n")
-  .map((i) => i.split(""));
+const data = input_a()
+  .split("\n\n")
+  .map((i) => i.trim().split(":"));
 
-const numbers = [];
-const details = [];
+let [seeds, ...maps] = data;
 
-for (let i = 0; i < m1.length; i++) {
-  for (let j = 0; j < m1[i].length; j++) {
-    let is_num = re_digit.test(m1[i][j]);
-    if (is_num) {
-      // индексы для поиска деталей
-      const j_min = Math.max(j - 1, 0);
-      const j_min_coord = j;
-      let num_s = m1[i][j];
-      while (is_num) {
-        j++;
-        is_num = re_digit.test(m1[i][j]);
-        if (is_num) {
-          num_s += m1[i][j];
-        }
-      }
-      const j_max = Math.min(m1[i].length - 1, j);
-      const j_max_coord = j - 1;
+seeds = seeds[1]
+  .trim()
+  .split(" ")
+  .map((i) => Number(i));
 
-      // ищем детали рядом
-      let f_valid = false;
-      for (
-        let i1 = Math.max(0, i - 1);
-        i1 <= Math.min(m1.length - 1, i + 1) && !f_valid;
-        i1++
-      ) {
-        for (let j1 = j_min; j1 <= j_max && !f_valid; j1++) {
-          const sym = m1[i1][j1];
-          if (!re_digit.test(sym) && sym != ".") {
-            f_valid = true;
+const seeds2 = [];
+for (let i = 0; i < seeds.length; i = i + 2) {
+  seeds2.push([seeds[i], seeds[i + 1]]);
+}
+
+// for (let i = 0; i < seeds.length; i = i + 2) {
+//   for (let j = 0; j < seeds[i + 1]; j++) {
+//     seeds2.push(seeds[i] + j);
+//   }
+
+//   //
+// }
+
+maps = maps.map((i) =>
+  i[1]
+    .trim()
+    .split("\n")
+    .map((i) => i.split(" ").map((i) => Number(i)))
+    .sort((b, a) => b[0] - a[0])
+);
+
+const seeds_locations = seeds.map((s) => {
+  const res = maps.reduce((val, map) => {
+    const m_valid = map.find((mi) => mi[1] <= val && val <= mi[1] + mi[2]);
+    if (m_valid) {
+      val = val - m_valid[1] + m_valid[0];
+    }
+
+    return val;
+  }, s);
+  return res;
+});
+
+let output_main = [...seeds2];
+for (let map_i = 0; map_i < maps.length; map_i++) {
+  const output = [];
+  for (let seed_i = 0; seed_i < output_main.length; seed_i++) {
+    const map = maps[map_i];
+    const seed = output_main[seed_i];
+
+    const m_valid = map.filter(
+      (mi) => mi[1] <= seed[0] + seed[1] && seed[0] <= mi[1] + mi[2]
+    );
+    if (m_valid.length == 0) {
+      output.push(seed);
+    } else {
+      // внутри s - это уже массив диапазонов, т.к. пересечения могут быть частичные
+      const remainder_seeds = m_valid.reduce(
+        (s, mi) => {
+          const new_s = [];
+          for (let i = 0; i < s.length; i++) {
+            const b = Math.max(mi[1], s[i][0]);
+            const e = Math.min(mi[1] + mi[2], s[i][0] + s[i][1]);
+            // есть пересечение
+            if (b <= e) {
+              output.push([b - mi[1] + mi[0], e - b]);
+
+              // если есть пересечение, добавим "остатки"
+              if (s[i][0] < mi[1]) {
+                new_s.push([s[i][0], mi[1] - s[i][0]]);
+              }
+              if (mi[1] + mi[2] < s[i][0] + s[i][1]) {
+                new_s.push([
+                  mi[1] + mi[2] + 1,
+                  s[i][0] + s[i][1] - (mi[1] + mi[2] + 1),
+                ]);
+              }
+            } else {
+              // нет пересечения
+              new_s.push(s[i]);
+            }
           }
-        }
-      }
-      if (f_valid) {
-        numbers.push({
-          x_min: j_min_coord,
-          x_max: j_max_coord,
-          y: i,
-          val: Number(num_s),
-        });
-      }
-    }
-    //
-  }
-}
 
-/* solution A */
-const sum1 = numbers.reduce((sum, i) => (sum += i.val), 0);
-console.log("A", sum1);
-
-/* solution B */
-for (let i = 0; i < m1.length; i++) {
-  for (let j = 0; j < m1[i].length; j++) {
-    const sym = m1[i][j];
-    if (!re_digit.test(sym) && sym != ".") {
-      details.push({ type: sym, x: j, y: i });
+          return new_s;
+        },
+        [seed]
+      );
+      output.push(...remainder_seeds);
     }
   }
+  output_main = [...output];
 }
 
-let pow = 0;
+// const seeds_locations2 = seeds2.map((s) => {
+//   const res = maps.reduce(
+//     (val, map) => {
+//       const new_val = [];
+//       for (let j1 = 0; j1 < val.length; j1++) {
+//         let val_item = val[j1];
+//         const m_valid = map.filter(
+//           (mi) =>
+//             mi[1] <= val_item[0] + val_item[1] && val_item[0] <= mi[1] + mi[2]
+//         );
+//         if (!m_valid) {
+//           new_val.push(val_item);
+//         } else {
+//           val_item = m_valid.reduce((s, mi) => {
+//             const new_s = [];
+//             for (let i = 0; i < s.length; i++) {
+//               const b = Math.max(mi[1], s[i][0]);
+//               const e = Math.min(mi[1] + mi[2], s[i][0] + s[i][1]);
+//               new_val.push([b, e]);
 
-const gears = details.filter((i) => i.type == "*");
-for (const g of gears) {
-  const num1 = numbers.filter(
-    (i) =>
-      g.x - 1 <= i.x_max &&
-      g.x + 1 >= i.x_min &&
-      g.y - 1 <= i.y &&
-      g.y + 1 >= i.y
-  );
+//               if (s[i][0] < mi[1]) {
+//                 new_s.push([s[i][0], mi[1] - s[i][0]]);
+//               }
+//               if (mi[1] + mi[2] < s[i][0] + s[i][1]) {
+//                 new_s.push([
+//                   mi[1] + mi[2] + 1,
+//                   s[i][0] + s[i][1] - (mi[1] + mi[2] + 1),
+//                 ]);
+//               }
+//             }
 
-  if (num1.length > 1) {
-    pow += num1.reduce((p, i) => (p *= i.val), 1);
-  }
-}
+//             return new_s;
+//           }, val_item);
+//         }
+//       }
 
-console.log("B", pow);
+//       return new_val;
+//     },
+//     [s]
+//   );
+//   return res;
+// });
+
+seeds_locations.sort((b, a) => b - a);
+output_main.sort((b, a) => b[0] - a[0]);
+// seeds_locations2.sort((b, a) => b - a);
+
+console.log("A", seeds_locations[0]);
+console.log("B", output_main[0][0]);
