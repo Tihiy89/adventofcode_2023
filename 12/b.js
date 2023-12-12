@@ -1,9 +1,19 @@
-import { input_a as input_a } from "./input.js";
+console.time(1);
+import { input_a_mini2 as input_a } from "./input.js";
+
+const copies = 2;
 
 const springs = input_a()
   .split("\n")
   .map((i) => i.split(" "))
-  .map((i) => [i[0].split(""), i[1].split(",").map((i) => Number(i))]);
+  .map((i) => [
+    Array(copies).fill(i[0]).join("?").split(""),
+    Array(copies)
+      .fill(i[1])
+      .join(",")
+      .split(",")
+      .map((i) => Number(i)),
+  ]);
 
 const lead_num = (str, size) => {
   while (str.length < size) {
@@ -48,7 +58,7 @@ const compare_str = (_s1, _pattern) => {
   return true;
 };
 
-const calc_var = springs.map((ss) => {
+const calc_var = springs.map((ss, ind) => {
   const _comb = ss[0];
   const _comb_str = ss[0].join("");
   const _cart = ss[1];
@@ -58,6 +68,10 @@ const calc_var = springs.map((ss) => {
     _comb.length - (_cart.reduce((s, i) => (s += i), 0) - _cart.length);
   const _var = [];
   for (let i = 0; i < 2 ** size; i++) {
+    const del = 1000000;
+    if (i % del == 0) {
+      console.log("calc " + i / del + " of " + 2 ** size / del);
+    }
     const _s = lead_num(i.toString(2), size);
     const sum = _s.split("").reduce((s, i) => (s += Number(i)), 0);
     if (sum == _cart.length) {
@@ -69,10 +83,11 @@ const calc_var = springs.map((ss) => {
       }
     }
   }
-
+  console.timeLog(1, "end " + ind);
   return [_comb, _cart, _var.length, _var];
 });
 
 const sum = calc_var.reduce((s, i) => (s += i[2]), 0);
 
+console.timeEnd(1);
 console.log("A", sum);
