@@ -1,7 +1,8 @@
+// часть 2 работает медленно, чуть быстрее чем b, тупо перебор но по маскам из ???
 console.time(1);
-import { input_a_mini2 as input_a } from "./input.js";
+import { input_a_mini as input_a } from "./input.js";
 
-const copies = 5;
+const copies = 1;
 
 const springs = input_a()
   .split("\n")

@@ -1,3 +1,4 @@
+// часть 1 работает медленно, тупо перебор и валидация масок
 import { input_a as input_a } from "./input.js";
 
 const springs = input_a()

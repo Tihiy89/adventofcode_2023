@@ -1,5 +1,6 @@
+// часть 2 работает медленно, тупо перебор и валидация масок
 console.time(1);
-import { input_a_mini2 as input_a } from "./input.js";
+import { input_a_mini as input_a } from "./input.js";
 
 const copies = 2;
 
