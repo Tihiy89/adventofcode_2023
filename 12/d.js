@@ -1,8 +1,8 @@
 // часть 2
 console.time(1);
-import { input_a as input_a } from "./input.js";
+import { input_a_mini2 as input_a } from "./input.js";
 
-const copies = 5;
+const copies = 3;
 
 const springs = input_a()
   .split("\n")
@@ -15,18 +15,6 @@ const springs = input_a()
       .split(",")
       .map((i) => Number(i)),
   ]);
-
-// сравнить строку с шаблоном
-const compare_str = (_s1, _pattern) => {
-  for (let i = 0; i < _s1.length; i++) {
-    if (_pattern[i] == "?") {
-      continue;
-    } else if (_pattern[i] != _s1[i]) {
-      return false;
-    }
-  }
-  return true;
-};
 
 //
 const compare_str_cart = (_s1, _cart) => {
@@ -71,14 +59,6 @@ const compare_str_cart = (_s1, _cart) => {
   return true;
 };
 
-// ведущие нули
-const lead_num = (str, size) => {
-  while (str.length < size) {
-    str = "0" + str;
-  }
-  return str;
-};
-
 // посчитать маску для строки (готовой без ??)
 const calc_cart = (_str) => {
   return _str
@@ -90,6 +70,10 @@ const calc_cart = (_str) => {
 };
 
 const calc_str = (_comb, _cart) => {
+  // const t_deep = deep++;
+  // if (t_deep % 10 == 0) {
+  //   console.log(t_deep);
+  // }
   const _comb_str = _comb.join("");
   const _cart_str = _cart.join("_");
 
@@ -132,6 +116,8 @@ const calc_str = (_comb, _cart) => {
   return res;
 };
 
+let deep = 0;
+
 const calc_var = springs.map((ss, ind) => {
   const _comb = ss[0];
   const _cart = ss[1];
@@ -140,6 +126,7 @@ const calc_var = springs.map((ss, ind) => {
 
   console.log("start", _comb_str, _cart_str);
 
+  deep = 0;
   const _var = calc_str(_comb, _cart);
 
   console.timeLog(1, "end " + ind);

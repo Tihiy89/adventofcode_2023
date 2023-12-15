@@ -1,4 +1,5 @@
 // часть 1 работает медленно, тупо перебор и валидация масок
+console.time(1);
 import { input_a as input_a } from "./input.js";
 
 const springs = input_a()
@@ -49,7 +50,7 @@ const compare_str = (_s1, _pattern) => {
   return true;
 };
 
-const calc_var = springs.map((ss) => {
+const calc_var = springs.map((ss, ind) => {
   const _comb = ss[0];
   const _comb_str = ss[0].join("");
   const _cart = ss[1];
@@ -71,6 +72,7 @@ const calc_var = springs.map((ss) => {
     }
   }
 
+  console.timeLog(1, "end " + ind);
   return [_comb, _cart, _var.length, _var];
 });
 
